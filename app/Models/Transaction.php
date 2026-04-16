@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    // Tambahkan baris ini bro:
+    // Ini 'pintu' buat data masuk
     protected $fillable = ['title', 'amount', 'type'];
 }
