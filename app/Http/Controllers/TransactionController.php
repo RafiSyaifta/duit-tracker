@@ -1,42 +1,49 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Exports\TransactionExport;
 use Maatwebsite\Excel\Facades\Excel;
+// TAMBAHKAN BARIS INI BIAR VS CODE PAHAM
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
     public function index() { 
-        // Cuma ambil punya user yang login
-        return response()->json(auth()->user()->transactions()->latest()->get()); 
+        // Ganti auth()->user() jadi Auth::user()
+        return response()->json(Auth::user()->transactions()->latest()->get()); 
     }
 
     public function store(Request $request) {
         $data = $request->validate([
-            'title' => 'required',
-            'amount' => 'required|numeric',
+            'title' => 'required|string|min:1',
+            'amount' => 'required|numeric|min:1',
             'type' => 'required|in:income,expense',
         ]);
         
-        $data['user_id'] = auth()->id(); // Isi user_id otomatis dari sistem login
+        // Ganti auth()->id() jadi Auth::id()
+        $data['user_id'] = Auth::id(); 
         return response()->json(Transaction::create($data));
     }
 
     public function update(Request $request, $id) {
         $data = $request->validate([
-            'title' => 'required', 'amount' => 'required|numeric', 'type' => 'required|in:income,expense',
+            'title' => 'required|string|min:1',
+            'amount' => 'required|numeric|min:1',
+            'type' => 'required|in:income,expense',
         ]);
 
-        // findOrFail milik user yang login (biar user lain ga bisa bajak ID)
-        $transaction = auth()->user()->transactions()->findOrFail($id);
+        // Ganti auth()->user() jadi Auth::user()
+        $transaction = Auth::user()->transactions()->findOrFail($id);
         $transaction->update($data);
         return response()->json($transaction);
     }
 
     public function destroy($id) {
-        $transaction = auth()->user()->transactions()->findOrFail($id);
+        // Ganti auth()->user() jadi Auth::user()
+        $transaction = Auth::user()->transactions()->findOrFail($id);
         $transaction->delete();
         return response()->json(['message' => 'Deleted']);
     }
