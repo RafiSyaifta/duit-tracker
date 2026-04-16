@@ -1,28 +1,52 @@
-# 💰 DuitTracker - Personal Finance Landing Page
+# 💹 DuitTracker - Personal Finance Management System
 
-DuitTracker adalah aplikasi pencatatan keuangan pribadi satu halaman yang dirancang dengan desain **elegan, minimalis, dan modern**. Dibuat menggunakan Laravel 11 untuk memudahkan pengguna mengelola arus kas dengan tampilan Dark Mode.
+[![Laravel Version](https://img.shields.io/badge/Laravel-11.x-red.svg)](https://laravel.com)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.x-blue.svg)](https://tailwindcss.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**DuitTracker** adalah aplikasi manajemen keuangan pribadi berbasis web yang dirancang dengan fokus pada kesederhanaan, keamanan data, dan pengalaman pengguna yang modern. Dibangun menggunakan **Laravel 11** dengan pendekatan **Modern TALL Stack** (Tailwind CSS, Alpine.js, Laravel).
 
 ---
 
-## 🚀 Fitur Utama
-* **Real-time Dashboard**: Pantau saldo, pemasukan, dan pengeluaran secara instan.
-* **Visualisasi Data**: Grafik donut interaktif menggunakan Chart.js.
-* **CRUD Transaksi**: Kelola catatan keuangan tanpa reload halaman (API based).
-* **Ekspor Excel**: Unduh laporan keuangan dalam format .xlsx hanya dengan satu klik.
+## ✨ Fitur Utama
 
-## 🛠️ Tech Stack
-| Bagian | Teknologi |
+### 🔐 Autentikasi & Keamanan Data
+- **Multi-User Isolation**: Setiap pengguna memiliki ruang lingkup data pribadi. Transaksi antar pengguna dijamin tidak akan saling terlihat.
+- **Secure Authentication**: Infrastruktur login dan registrasi yang aman berbasis Laravel Breeze.
+
+### 📊 Visualisasi & Dashboard
+- **Interactive Analytics**: Visualisasi perbandingan pemasukan dan pengeluaran menggunakan **Chart.js**.
+- **Kalkulasi Saldo Real-time**: Perhitungan otomatis untuk saldo akhir, total pemasukan, dan total pengeluaran.
+
+### 🎨 UI/UX Modern (Glassmorphism)
+- **Premium Dark Mode**: Desain antarmuka gelap dengan efek *layered glass* dan tipografi *Plus Jakarta Sans*.
+- **Skeleton Loading**: Animasi transisi halus untuk menghilangkan kesan kaku saat memuat data.
+- **Toast Notifications**: Sistem notifikasi instan yang informatif untuk setiap interaksi pengguna.
+- **Empty State Management**: Tampilan visual yang bersih saat riwayat transaksi masih kosong.
+
+### ⚡ Efisiensi & Produktivitas
+- **Quick Add Feature**: Tombol pintas untuk pencatatan transaksi frekuensi tinggi guna mempercepat input data.
+- **Excel Export**: Kemampuan mengekspor riwayat transaksi ke format `.xlsx` melalui *Maatwebsite/Excel*.
+
+---
+
+## 🛠️ Stack Teknologi
+
+| Komponen | Teknologi |
 | :--- | :--- |
-| **Backend** | Laravel 11 (PHP 8.2+) |
+| **Backend** | Laravel 11 (PHP 8.3+) |
+| **Database** | MySQL / MariaDB |
 | **Frontend** | Tailwind CSS & Alpine.js |
-| **Database** | MySQL |
-| **Charts** | Chart.js |
-| **Library** | Laravel Excel |
+| **Visualisasi** | Chart.js |
+| **Export Tool** | Maatwebsite/Excel |
 
-## 📦 Cara Instalasi
-Jika Anda ingin mencoba project ini di lokal:
+---
 
-1. **Clone Repository**
+## 🚀 Panduan Instalasi
+
+Lakukan langkah-langkah berikut untuk menjalankan proyek di lingkungan lokal:
+
+1. **Clone Repositori**
    ```bash
-   git clone [https://github.com/USERNAME_LU/duit-tracker.git](https://github.com/USERNAME_LU/duit-tracker.git)
+   git clone [https://github.com/RafiSyaifta/duit-tracker.git](https://github.com/RafiSyaifta/duit-tracker.git)
    cd duit-tracker
