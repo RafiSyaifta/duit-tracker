@@ -12,12 +12,15 @@ return new class extends Migration
     public function up(): void
 {
     Schema::create('transactions', function (Blueprint $table) {
-        $table->id();
-        $table->string('title');
-        $table->decimal('amount', 15, 2); // Untuk simpan nominal uang
-        $table->enum('type', ['income', 'expense']);
-        $table->timestamps();
-    });
+    $table->id();
+    // Tambahkan baris ini di sini:
+    $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
+    
+    $table->string('title');
+    $table->decimal('amount', 15, 2); 
+    $table->enum('type', ['income', 'expense']);
+    $table->timestamps();
+});
 }
 
     /**

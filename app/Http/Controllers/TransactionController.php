@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
@@ -10,7 +9,8 @@ use Maatwebsite\Excel\Facades\Excel;
 class TransactionController extends Controller
 {
     public function index() { 
-        return response()->json(Transaction::latest()->get()); 
+        // Cuma ambil punya user yang login
+        return response()->json(auth()->user()->transactions()->latest()->get()); 
     }
 
     public function store(Request $request) {
@@ -19,27 +19,29 @@ class TransactionController extends Controller
             'amount' => 'required|numeric',
             'type' => 'required|in:income,expense',
         ]);
+        
+        $data['user_id'] = auth()->id(); // Isi user_id otomatis dari sistem login
         return response()->json(Transaction::create($data));
     }
 
-    // FUNGSI EDIT ADA DI SINI
     public function update(Request $request, $id) {
         $data = $request->validate([
-            'title' => 'required',
-            'amount' => 'required|numeric',
-            'type' => 'required|in:income,expense',
+            'title' => 'required', 'amount' => 'required|numeric', 'type' => 'required|in:income,expense',
         ]);
-        $transaction = Transaction::findOrFail($id);
+
+        // findOrFail milik user yang login (biar user lain ga bisa bajak ID)
+        $transaction = auth()->user()->transactions()->findOrFail($id);
         $transaction->update($data);
         return response()->json($transaction);
     }
 
     public function destroy($id) {
-        Transaction::destroy($id);
+        $transaction = auth()->user()->transactions()->findOrFail($id);
+        $transaction->delete();
         return response()->json(['message' => 'Deleted']);
     }
 
     public function export() {
-        return Excel::download(new TransactionExport, 'Laporan_Keuangan_2026.xlsx');
+        return Excel::download(new TransactionExport, 'Laporan_Keuangan.xlsx');
     }
 }

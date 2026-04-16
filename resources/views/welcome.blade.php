@@ -17,11 +17,20 @@
             <div>
                 <h1 class="text-3xl font-bold tracking-tighter text-blue-500">Duit<span
                         class="text-white">Tracker</span></h1>
-                <p class="text-zinc-500 text-sm">Kelola keuangan dengan elegan.</p>
+                <p class="text-zinc-500 text-sm italic">Halo, {{ Auth::user()->name }}!</p>
             </div>
-            <button @click="exportExcel()"
-                class="bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-blue-900/20">Ekspor
-                Excel</button>
+
+            <div class="flex items-center gap-4">
+                <button @click="exportExcel()"
+                    class="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-5 py-2.5 rounded-xl text-xs transition">Ekspor
+                    Excel</button>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit"
+                        class="bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white px-5 py-2.5 rounded-xl text-xs font-bold transition">Keluar</button>
+                </form>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-10">
