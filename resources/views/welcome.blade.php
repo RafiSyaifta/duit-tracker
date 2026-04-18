@@ -61,18 +61,20 @@
     </div>
 
     <div class="max-w-5xl mx-auto p-6 lg:p-10 min-h-screen">
-        <header class="flex justify-between items-end py-10">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 py-6 md:py-10">
             <div>
-                <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2">Duit<span
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-1 md:mb-2">Duit<span
                         class="text-blue-500">Tracker.</span></h1>
-                <p class="text-zinc-500 text-sm italic">Laporan untuk <span
+                <p class="text-zinc-500 text-xs md:text-sm italic">Laporan untuk <span
                         class="text-zinc-300 font-bold underline">{{ Auth::user()->name }}</span>.</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
                 <button @click="exportExcel()"
-                    class="glass hover:bg-zinc-800 px-5 py-2.5 rounded-2xl text-xs font-semibold transition">Ekspor</button>
-                <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit"
-                        class="bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition">Keluar</button>
+                    class="glass hover:bg-zinc-800 flex-1 sm:flex-none px-5 py-2.5 rounded-2xl text-xs font-semibold transition text-center">Ekspor
+                    CSV</button>
+                <form method="POST" action="{{ route('logout') }}" class="flex-1 sm:flex-none">@csrf<button
+                        type="submit"
+                        class="w-full bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white px-5 py-2.5 rounded-2xl text-xs font-bold transition">Keluar</button>
                 </form>
             </div>
         </header>
@@ -84,6 +86,7 @@
                     <h2 class="text-5xl font-extrabold text-white tracking-tight">Rp <span
                             x-text="formatRupiah(totalSaldo())"></span></h2>
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="glass p-6 rounded-[2rem] border-l-4 border-l-emerald-500/50">
                         <p class="text-zinc-500 text-xs font-bold uppercase mb-1">Total Pemasukan</p>
@@ -96,61 +99,109 @@
                                 x-text="formatRupiah(totalExpense())"></span></p>
                     </div>
                 </div>
+
+                <div class="glass p-6 rounded-[2rem] border-l-4 transition-colors duration-500"
+                    :class="budgetPercentage() >= 90 ? 'border-l-rose-500' : (budgetPercentage() >= 75 ? 'border-l-yellow-500' : 'border-l-blue-500')">
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-zinc-500 text-xs font-bold uppercase tracking-widest">Batas Pengeluaran Bulan Ini
+                        </p>
+                        <button @click="setBudget()"
+                            class="text-[10px] bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 px-3 py-1.5 rounded-xl transition font-bold ring-1 ring-white/5 shadow-lg">Atur
+                            Target</button>
+                    </div>
+
+                    <div x-show="budgetLimit > 0" x-cloak>
+                        <div class="flex justify-between items-end mb-2">
+                            <p class="text-2xl font-bold text-white">Rp <span
+                                    x-text="formatRupiah(expenseThisMonth())"></span></p>
+                            <p class="text-xs text-zinc-500 font-bold">dari Rp <span
+                                    x-text="formatRupiah(budgetLimit)"></span></p>
+                        </div>
+
+                        <div
+                            class="w-full bg-black/60 rounded-full h-3 ring-1 ring-white/5 overflow-hidden shadow-inner">
+                            <div class="h-3 rounded-full transition-all duration-1000 ease-out"
+                                :class="budgetPercentage() >= 90 ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]' : (budgetPercentage() >= 75 ? 'bg-yellow-500' : 'bg-blue-500')"
+                                :style="`width: ${budgetPercentage()}%`"></div>
+                        </div>
+
+                        <p class="text-[10px] mt-2 font-bold uppercase text-right"
+                            :class="budgetPercentage() >= 90 ? 'text-rose-400 animate-pulse' : (budgetPercentage() >= 75 ? 'text-yellow-400' : 'text-blue-400')"
+                            x-text="budgetPercentage() >= 100 ? 'BUDGET JEBOL! ☠️' : (budgetPercentage() >= 90 ? 'AWAS KERING! 🚨' : (budgetPercentage() >= 75 ? 'Udah Mau Habis ⚠️' : 'Masih Aman 🟢'))">
+                        </p>
+                    </div>
+
+                    <div x-show="!budgetLimit || budgetLimit == 0" class="py-3 text-center opacity-60">
+                        <p class="text-xs font-bold italic text-zinc-400">Belum ada target budget. Klik 'Atur Target'
+                            untuk membatasi pengeluaranmu.</p>
+                    </div>
+                </div>
+
             </div>
-            <div class="lg:col-span-4 glass p-8 rounded-[2rem] flex flex-col items-center justify-center relative">
-                <div class="relative w-full aspect-square">
+
+            <div
+                class="lg:col-span-4 glass p-6 md:p-8 rounded-[2rem] flex flex-col items-center justify-center relative min-h-[300px] h-full shadow-2xl">
+                <div class="relative w-full h-full flex items-center justify-center">
                     <canvas id="myChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Kondisi</span>
-                        <span class="text-blue-400 text-sm font-bold"
-                            x-text="filteredData().length === 0 ? 'Data Kosong' : (totalIncome() >= totalExpense() ? 'Aman' : 'Defisit')"></span>
+                        <span
+                            class="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-0.5">Kondisi</span>
+                        <span class="text-sm md:text-base font-extrabold drop-shadow-md"
+                            :class="filteredData().length === 0 ? 'text-zinc-500' : (totalIncome() >= totalExpense() ? 'text-blue-400' : 'text-rose-400')"
+                            x-text="filteredData().length === 0 ? 'Data Kosong' : (totalIncome() >= totalExpense() ? 'Aman' : 'Defisit')">
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="glass rounded-[2rem] p-8 mb-6 ring-1 ring-blue-500/20 shadow-2xl">
+        <div id="form-transaksi" class="glass rounded-[2rem] p-8 mb-6 ring-1 ring-blue-500/20 shadow-2xl">
             <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-3">
                 <span class="w-2 h-8 bg-blue-500 rounded-full"></span>
                 <span x-text="isEdit ? 'Perbarui Data Transaksi' : 'Catat Transaksi Baru'"></span>
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                <div class="md:col-span-7 space-y-2">
+                <div class="md:col-span-4 space-y-2">
                     <label class="text-xs text-zinc-500 font-bold ml-2 uppercase tracking-wider">Keterangan</label>
-                    <input type="text" x-model="formData.title" placeholder="Cth: Nasi Goreng Gila"
+                    <input type="text" x-model="formData.title" placeholder="Cth: Nasi Goreng"
                         class="w-full bg-black/50 border border-zinc-800 py-3.5 px-4 rounded-2xl focus:border-blue-500 outline-none text-sm text-zinc-100 transition">
-
-                    <div class="flex flex-wrap gap-2 pt-1">
-                        <button @click="quickAdd('Makan Siang', 'expense', 'makan')"
-                            class="text-[10px] font-bold px-3 py-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 transition">🍔
-                            MAKAN</button>
-                        <button @click="quickAdd('Gaji Bulanan', 'income', 'gaji')"
-                            class="text-[10px] font-bold px-3 py-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 transition">💰
-                            GAJI</button>
-                        <button @click="quickAdd('Isi Bensin', 'expense', 'transport')"
-                            class="text-[10px] font-bold px-3 py-1.5 rounded-full bg-zinc-800 hover:bg-zinc-700 transition">🚗
-                            TRANSPORT</button>
-                    </div>
                 </div>
 
-                <div class="md:col-span-5 space-y-2">
+                <div class="md:col-span-3 space-y-2">
                     <label class="text-xs text-zinc-500 font-bold ml-2 uppercase tracking-wider">Nominal (Rp)</label>
-                    <input type="number" x-model="formData.amount" placeholder="0"
+                    <input type="text" :value="formData.amount ? formatRupiah(formData.amount) : ''"
+                        @input="formData.amount = $event.target.value.replace(/\D/g, '')" placeholder="0"
                         class="w-full bg-black/50 border border-zinc-800 py-3.5 px-4 rounded-2xl focus:border-blue-500 outline-none text-base font-bold text-blue-400 transition">
                 </div>
 
                 <div class="md:col-span-5 space-y-2">
+                    <label class="text-xs text-zinc-500 font-bold ml-2 uppercase tracking-wider">Catatan
+                        Tambahan</label>
+                    <input type="text" x-model="formData.notes" placeholder="Opsional (Cth: Traktir si Budi)"
+                        class="w-full bg-black/50 border border-zinc-800 py-3.5 px-4 rounded-2xl focus:border-blue-500 outline-none text-sm text-zinc-400 italic transition">
+                </div>
+
+                <div class="md:col-span-5 space-y-2">
                     <label class="text-xs text-zinc-500 font-bold ml-2 uppercase tracking-wider">Kategori</label>
-                    <select x-model="formData.category"
-                        class="w-full bg-black/50 border border-zinc-800 py-3.5 px-4 rounded-2xl focus:border-blue-500 outline-none text-zinc-300 text-sm cursor-pointer transition appearance-none">
-                        <option value="makan">🍔 Makan & Minum</option>
-                        <option value="transport">🚗 Transportasi</option>
-                        <option value="tagihan">📄 Tagihan & Cicilan</option>
-                        <option value="hiburan">🎬 Hiburan</option>
-                        <option value="gaji">💰 Gaji & Bonus</option>
-                        <option value="lainnya">✨ Lainnya</option>
-                    </select>
+                    <div class="relative">
+                        <select x-model="formData.category"
+                            class="w-full bg-black/50 border border-zinc-800 py-3.5 pl-4 pr-10 rounded-2xl focus:border-blue-500 outline-none text-zinc-300 text-sm cursor-pointer transition appearance-none">
+                            <option value="makan" class="bg-zinc-900 text-zinc-100 py-2">🍔 Makan & Minum</option>
+                            <option value="transport" class="bg-zinc-900 text-zinc-100 py-2">🚗 Transportasi</option>
+                            <option value="tagihan" class="bg-zinc-900 text-zinc-100 py-2">📄 Tagihan & Cicilan</option>
+                            <option value="hiburan" class="bg-zinc-900 text-zinc-100 py-2">🎬 Hiburan</option>
+                            <option value="gaji" class="bg-zinc-900 text-zinc-100 py-2">💰 Gaji & Bonus</option>
+                            <option value="lainnya" class="bg-zinc-900 text-zinc-100 py-2">✨ Lainnya</option>
+                        </select>
+                        <div
+                            class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-zinc-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="md:col-span-4 space-y-2">
@@ -181,15 +232,23 @@
                 <input type="text" x-model="searchQuery" placeholder="Cari transaksi..."
                     class="w-full bg-black/50 border border-zinc-800 py-3 pl-12 pr-4 rounded-xl focus:border-blue-500 outline-none transition text-sm text-zinc-200">
             </div>
-            <select x-model="filterPeriod"
-                class="w-full md:w-48 bg-black/50 border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-zinc-400 text-sm cursor-pointer">
-                <option value="all">Semua Waktu</option>
-                <option value="this_month">Bulan Ini</option>
-                <option value="last_month">Bulan Lalu</option>
-            </select>
+
+            <div class="relative w-full md:w-48">
+                <select x-model="filterPeriod"
+                    class="w-full bg-black/50 border border-zinc-800 py-3 pl-4 pr-10 rounded-xl focus:border-blue-500 outline-none text-zinc-400 text-sm cursor-pointer appearance-none transition">
+                    <option value="all" class="bg-zinc-900 text-zinc-100 py-2">Semua Waktu</option>
+                    <option value="this_month" class="bg-zinc-900 text-zinc-100 py-2">Bulan Ini</option>
+                    <option value="last_month" class="bg-zinc-900 text-zinc-100 py-2">Bulan Lalu</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-zinc-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
         </div>
 
-        <div class="glass rounded-[2rem] overflow-hidden mb-12">
+        <div class="glass rounded-[2rem] p-5 md:p-8 mb-6 ring-1 ring-blue-500/20 shadow-2xl">
             <div class="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/30">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-zinc-500">Riwayat Keuangan</h3>
                 <span class="text-[10px] bg-zinc-800 px-3 py-1 rounded-full text-zinc-400 font-bold"
@@ -218,6 +277,9 @@
                                         </div>
                                         <div>
                                             <div class="font-bold text-zinc-100 text-sm" x-text="item.title"></div>
+                                            <div x-show="item.notes"
+                                                class="text-[11px] text-zinc-500 italic mt-0.5 mb-1.5"
+                                                x-text="item.notes"></div>
                                             <div
                                                 class="text-[10px] text-zinc-500 font-bold uppercase flex gap-2 items-center mt-1.5">
                                                 <span
@@ -237,13 +299,13 @@
                                             x-text="formatRupiah(item.amount)"></span>
                                     </div>
                                 </td>
-                                <td class="p-6 text-center w-40">
-                                    <div
-                                        class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition duration-300">
+                                <td
+                                    class="p-4 md:p-6 text-right sm:text-center w-auto sm:w-32 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition align-middle">
+                                    <div class="flex flex-col sm:flex-row justify-end sm:justify-center gap-2">
                                         <button @click="editData(item)"
-                                            class="bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition">Edit</button>
+                                            class="text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition shadow-sm">Edit</button>
                                         <button @click="deleteData(item.id)"
-                                            class="bg-zinc-800 hover:bg-rose-600 text-zinc-500 hover:text-white px-3 py-1.5 rounded-xl text-[10px] font-bold transition">Hapus</button>
+                                            class="text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition shadow-sm">Hapus</button>
                                     </div>
                                 </td>
                             </tr>
@@ -268,6 +330,7 @@
                     amount: '',
                     type: 'expense',
                     category: 'makan',
+                    notes: '',
                     transaction_date: new Date().toISOString().split('T')[0]
                 },
                 isEdit: false,
@@ -276,8 +339,37 @@
                 isLoading: true,
                 searchQuery: '',
                 filterPeriod: 'all',
+
+                // Variabel Budgeting (Disimpan di LocalStorage)
+                budgetLimit: localStorage.getItem('duitTracker_budget') || 0,
+
                 toast: { show: false, message: '', type: 'success' },
 
+                // FUNGSI BUDGETING
+                setBudget() {
+                    let nominal = prompt("Tentukan batas maksimal pengeluaran bulanan (Hanya ketik angka, misal: 2000000):", this.budgetLimit);
+                    if (nominal !== null && !isNaN(nominal) && nominal !== "") {
+                        this.budgetLimit = parseInt(nominal);
+                        localStorage.setItem('duitTracker_budget', this.budgetLimit);
+                        this.showToast('Target bulanan berhasil di-update!');
+                    }
+                },
+
+                expenseThisMonth() {
+                    const now = new Date();
+                    return this.transactions.filter(t => {
+                        const tDate = new Date(t.transaction_date || t.created_at);
+                        return t.type === 'expense' && tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
+                    }).reduce((a, b) => a + parseFloat(b.amount), 0);
+                },
+
+                budgetPercentage() {
+                    if (!this.budgetLimit || this.budgetLimit == 0) return 0;
+                    let pct = (this.expenseThisMonth() / this.budgetLimit) * 100;
+                    return pct > 100 ? 100 : Math.round(pct);
+                },
+
+                // FUNGSI KATEGORI & LABEL
                 getCategoryIcon(cat) {
                     const icons = { 'makan': '🍔', 'transport': '🚗', 'tagihan': '📄', 'hiburan': '🎬', 'gaji': '💰', 'lainnya': '✨' };
                     return icons[cat] || '✨';
@@ -353,9 +445,10 @@
                         amount: item.amount,
                         type: item.type,
                         category: item.category || 'lainnya',
+                        notes: item.notes || '', // <-- Ini tambahan barunya
                         transaction_date: item.transaction_date || (item.created_at ? item.created_at.split('T')[0] : new Date().toISOString().split('T')[0])
                     };
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    document.getElementById('form-transaksi').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 },
 
                 async saveData() {
@@ -375,7 +468,7 @@
                 cancelEdit() {
                     this.isEdit = false;
                     this.editId = null;
-                    this.formData = { title: '', amount: '', type: 'expense', category: 'makan', transaction_date: new Date().toISOString().split('T')[0] };
+                    this.formData = { title: '', amount: '', type: 'expense', category: 'makan', notes: '', transaction_date: new Date().toISOString().split('T')[0] };
                 },
 
                 async deleteData(id) {
@@ -405,10 +498,52 @@
                                 borderWidth: 3
                             }]
                         },
-                        options: { cutout: '88%', plugins: { legend: { display: false } }, animation: { duration: 500 } }
+                        options: {
+                            cutout: '75%', // Bikin cincin donutnya lebih tebal
+                            maintainAspectRatio: false, // Biar chart bisa ngikutin tinggi kotak, gak harus selalu kotak persegi
+                            plugins: { legend: { display: false } },
+                            animation: { duration: 800, easing: 'easeOutQuart' } // Bikin animasinya lebih smooth
+                        }
                     });
                 },
-                exportExcel() { window.location.href = '/api/export'; }
+
+                exportExcel() {
+                    // 1. Ambil data yang sedang tampil di layar (sudah terfilter)
+                    const data = this.filteredData();
+
+                    if (data.length === 0) {
+                        return this.showToast('Tidak ada data untuk diekspor!', 'error');
+                    }
+
+                    // 2. Bikin Header Kolom Excel
+                    let csvContent = "Tanggal,Keterangan,Kategori,Tipe,Catatan,Nominal (Rp)\n";
+
+                    // 3. Looping data dan masukkan ke baris Excel
+                    data.forEach(row => {
+                        let date = new Date(row.transaction_date || row.created_at).toLocaleDateString('id-ID');
+
+                        // Trik ini buat nanganin kalau judul/catatan pake tanda koma biar tabel Excel ga berantakan
+                        let title = `"${row.title.replace(/"/g, '""')}"`;
+                        let category = this.getCategoryLabel(row.category);
+                        let type = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+                        let notes = `"${(row.notes || '').replace(/"/g, '""')}"`;
+                        let amount = row.amount;
+
+                        csvContent += `${date},${title},${category},${type},${notes},${amount}\n`;
+                    });
+
+                    // 4. Proses pembuatan file dan auto-download
+                    // \uFEFF ditambahkan agar Excel bisa membaca karakter khusus/emoji dengan rapi (UTF-8)
+                    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", "Laporan_DuitTracker.csv"); // Nama file
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
             }
         }
     </script>

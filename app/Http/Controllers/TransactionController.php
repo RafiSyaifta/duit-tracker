@@ -23,6 +23,7 @@ class TransactionController extends Controller
             'type' => 'required|in:income,expense',
             'category' => 'required|string', // <-- Tambahan Kategori
             'transaction_date' => 'required|date',
+            'notes' => 'nullable|string',
         ]);
         
         $data['user_id'] = Auth::id(); 
@@ -37,6 +38,7 @@ class TransactionController extends Controller
             'type' => 'required|in:income,expense',
             'category' => 'required|string', // <-- Tambahan Kategori
             'transaction_date' => 'required|date',
+            'notes' => 'nullable|string',
         ]);
 
         $transaction = Auth::user()->transactions()->findOrFail($id);
